@@ -1,174 +1,181 @@
-(function ($) {
-    'use strict';
+(function($) {
+	"use strict";
 
-    $.fn.scrollingTo = function (opts) {
-        var defaults = {
-            animationTime: 1000,
-            easing: '',
-            callbackBeforeTransition: function () {},
-            callbackAfterTransition: function () {}
-        };
+	$(".history-scroller").niceScroll({
+		cursorwidth: "10px",
+		background: "#0d1015",
+		cursorborder: "0",
+		cursorborderradius: "0",
+		autohidemode: false,
+		zindex: 5
+	});
 
-        var config = $.extend({}, defaults, opts);
+	$(".testimonials").owlCarousel({
+		margin: 30,
+		autoPlay: true,
+		autoPlay : 5000,
+		responsive: {
+			0: {
+				items: 1
+			},
+			480: {
+				items: 1
+			},
+			768: {
+				items: 1
+			},
+			1024: {
+				items: 2
+			}
+		}
+	});
+	
+	animatedProgressBar();
+	windowHieght();
+	contactFormValidation();
+	previewPannel();
 
-        $(this).click(function (e) {
-            var eventVal = e;
-            e.preventDefault();
+	function animatedProgressBar () {
+		$(".progress").each(function() {
+			var skillValue = $(this).find(".skill-lavel").attr("data-skill-value");
+			$(this).find(".bar").animate({
+				width: skillValue
+			}, 1500, "easeInOutExpo");
 
-            var $section = $(document).find($(this).data('section'));
-            if ($section.length < 1) {
-                return false;
-            };
+			$(this).find(".skill-lavel").text(skillValue);
+		});
+	}
 
-            if ($('html, body').is(':animated')) {
-                $('html, body').stop(true, true);
-            };
+	function windowHieght(){
+		if ( $(window).height() <=768 ) {
+			$(".pt-table").addClass("desktop-768");
+		} else {
+			$(".pt-table").removeClass("desktop-768");
+		}
+	}
+	
+	/*----------------------------------------
+		contact form validation
+	------------------------------------------*/
+	function contactFormValidation() {
+		$(".contact-form").validate({
+		    rules: {
+		        name: {
+		            required: true
+		        },
+		        email: {
+		            required: true,
+		            email: true
+		        },
+		        subject: {
+		            required: true
+		        },
+		        message: {
+		            required: true
+		        }
+		    },
+		    messages: {
+		        name: {
+		            required: "Write your name here"
+		        },
+		        email: {
+		            required: "No email, no support"
+		        },
+		        subject: {
+		            required: "you have a reason to contact, write it here"
+		        },
+		        message: {
+		            required: "You have to write something to send this form"
+		        }
+		    },
+		    submitHandler: function(form) {
+		        $(form).ajaxSubmit({
+		            type: "POST",
+		            data: $(form).serialize(),
+		            url : "mail.php",
+		            success: function() {
+		                $(".contact-form").fadeTo( "slow", 1, function() {
+		                    $(".contact-form .msg-success").slideDown();
+		                });
+		                $(".contact-form").resetForm();
+		            },
+		            error: function() {
+		                $(".contact-form").fadeTo( "slow", 1, function() {
+		                    $(".contact-form .msg-failed").slideDown();
+		                });
+		            }
+		        });
+		    },
+		    errorPlacement: function(error, element) {
+		        element.after(error);
+		        error.hide().slideDown();
+		    }
+		}); 
+	}
 
-            var scrollPos = $section.offset().top;
+	/*----------------------------------------
+		Isotope Masonry
+	------------------------------------------*/
+	function isotopeMasonry() {
+		$(".isotope-gutter").isotope({
+		    itemSelector: '[class^="col-"]',
+		    percentPosition: true
+		});
+		$(".isotope-no-gutter").isotope({
+		    itemSelector: '[class^="col-"]',
+		    percentPosition: true,
+		    masonry: {
+		        columnWidth: 1
+		    }
+		});
 
-            if ($(window).scrollTop() == scrollPos) {
-                return false;
-            };
+		$(".filter a").on("click", function(){
+		    $(".filter a").removeClass("active");
+		    $(this).addClass("active");
+		   // portfolio fiter
+		    var selector = $(this).attr("data-filter");
+		    $(".isotope-gutter").isotope({
+		        filter: selector,
+		        animationOptions: {
+		            duration: 750,
+		            easing: "linear",
+		            queue: false
+		        }
+		    });
+		    return false;
+		});
+	}
 
-            config.callbackBeforeTransition(eventVal, $section);
-
-            $('html, body').animate({
-                'scrollTop': (scrollPos + 'px')
-            }, config.animationTime, config.easing, function () {
-                config.callbackAfterTransition(eventVal, $section);
-            });
-        });
-    };
-
-    /* ========================================================================= */
-    /*   Contact Form Validating
-    /* ========================================================================= */
-
-    $('#contact-form').validate({
-        rules: {
-            name: {
-                required: true,
-                minlength: 4
-            },
-            email: {
-                required: true,
-                email: true
-            },
-            subject: {
-                required: false,
-            },
-            message: {
-                required: true,
-            },
-        },
-        messages: {
-            user_name: {
-                required: "Come on, you have a name don't you?",
-                minlength: "Your name must consist of at least 2 characters"
-            },
-            email: {
-                required: "Please put your email address",
-            },
-            message: {
-                required: "Put some messages here?",
-                minlength: "Your name must consist of at least 2 characters"
-            },
-        },
-        submitHandler: function (form) {
-            $(form).ajaxSubmit({
-                type: "POST",
-                data: $(form).serialize(),
-                url: "sendmail.php",
-                success: function () {
-                    $('#contact-form #success').fadeIn();
-                },
-                error: function () {
-                    $('#contact-form #error').fadeIn();
-                }
-            });
-        }
-    });
-
-
-}(jQuery));
-
-
-
-jQuery(document).ready(function () {
-    "use strict";
-    new WOW().init();
-
-
-    (function () {
-        jQuery('.smooth-scroll').scrollingTo();
-    }());
-
-});
-
-
-
-
-$(document).ready(function () {
-
-    $(window).scroll(function () {
-        if ($(window).scrollTop() > 50) {
-            $(".navbar-brand a").css("color", "#fff");
-            $(".top-bar").removeClass("animated-header");
-        } else {
-            $(".navbar-brand a").css("color", "inherit");
-            $(".top-bar").addClass("animated-header");
-        }
-    });
-
-    $('.clients-logo-slider').slick({
-        dots: false,
-        infinite: true,
-        speed: 300,
-        slidesToShow: 5,
-        slidesToScroll: 1,
-        arrows: false,
-        responsive: [
-          {
-            breakpoint: 1024,
-            settings: {
-              slidesToShow: 3,
-              slidesToScroll: 1
-            }
-          },
-          {
-            breakpoint: 600,
-            settings: {
-              slidesToShow: 2,
-              slidesToScroll: 1
-            }
-          }
-        ]
-      });
-
-
-});
-
-
-
-// fancybox
-$(".fancybox").fancybox({
-    padding: 0,
-
-    openEffect: 'elastic',
-    openSpeed: 450,
-
-    closeEffect: 'elastic',
-    closeSpeed: 350,
-
-    closeClick: true,
-    helpers: {
-        title: {
-            type: 'inside'
-        },
-        overlay: {
-            css: {
-                'background': 'rgba(0,0,0,0.8)'
-            }
-        }
-    }
-});
+	/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+	    Preview Pannel
+	-=-=-=-=-=-=-=-=-=--=-=-=-=-=-*/
+	function previewPannel() {
+	    $(".switcher-trigger").on("click", function() {
+	        $(".preview-wrapper").toggleClass("extend");
+	        return false;
+	    });
+	    if ($(window).width() < 768 ) {            
+	        //$(".preview-wrapper").removeClass("extend");            
+	    }
+	    $(".color-options li").on("click", function(){
+	        if ($("body").hasClass("back-step")) {
+	            $("#color-changer").attr({
+	                "href":"../css/colors/"+$(this).attr("data-color")+".css"
+	            });
+	        }else {
+	            $("#color-changer").attr({
+	                "href":"css/colors/"+$(this).attr("data-color")+".css"
+	            });
+	        }
+	        return false;
+	    });
+	}
+	
+	$(window).on("load", function() {
+		$(".preloader").addClass("active");
+		isotopeMasonry();
+		setTimeout(function () {
+		    $(".preloader").addClass("done");
+		}, 1500);
+	});
+})(jQuery);
